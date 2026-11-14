@@ -1,0 +1,166 @@
+VHDL Code for 4-bit ALU
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity alu_4bit is
+    Port (
+        A        : in  STD_LOGIC_VECTOR(3 downto 0);
+        B        : in  STD_LOGIC_VECTOR(3 downto 0);
+        Sel      : in  STD_LOGIC_VECTOR(2 downto 0);
+        Result   : out STD_LOGIC_VECTOR(3 downto 0);
+        CarryOut : out STD_LOGIC
+    );
+end alu_4bit;
+
+architecture Behavioral of alu_4bit is
+begin
+
+    process(A, B, Sel)
+        variable temp_A   : unsigned(4 downto 0);
+        variable temp_B   : unsigned(4 downto 0);
+        variable temp_Res : unsigned(4 downto 0);
+    begin
+
+        temp_A := unsigned('0' & A);
+        temp_B := unsigned('0' & B);
+        temp_Res := (others => '0');
+
+        Result <= "0000";
+        CarryOut <= '0';
+
+        case Sel is
+
+            when "000" => -- Addition
+                temp_Res := temp_A + temp_B;
+                Result <= std_logic_vector(temp_Res(3 downto 0));
+                CarryOut <= temp_Res(4);
+
+            when "001" => -- Subtraction
+                temp_Res := temp_A - temp_B;
+                Result <= std_logic_vector(temp_Res(3 downto 0));
+
+            when "010" => -- Increment A
+                temp_Res := temp_A + 1;
+                Result <= std_logic_vector(temp_Res(3 downto 0));
+                CarryOut <= temp_Res(4);
+
+            when "011" => -- Decrement A
+                temp_Res := temp_A - 1;
+                Result <= std_logic_vector(temp_Res(3 downto 0));
+
+            when "100" => -- AND
+                Result <= A and B;
+
+            when "101" => -- OR
+                Result <= A or B;
+
+            when "110" => -- XOR
+                Result <= A xor B;
+
+            when "111" => -- NOT A
+                Result <= not A;
+
+            when others =>
+                Result <= "0000";
+
+        end case;
+
+    end process;
+
+end Behavioral;
+Testbench Code for 4-bit ALU
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity tb_alu_4bit is
+end tb_alu_4bit;
+
+architecture Behavioral of tb_alu_4bit is
+
+    component alu_4bit is
+        Port (
+            A        : in  STD_LOGIC_VECTOR(3 downto 0);
+            B        : in  STD_LOGIC_VECTOR(3 downto 0);
+            Sel      : in  STD_LOGIC_VECTOR(2 downto 0);
+            Result   : out STD_LOGIC_VECTOR(3 downto 0);
+            CarryOut : out STD_LOGIC
+        );
+    end component;
+
+    signal A        : STD_LOGIC_VECTOR(3 downto 0) := "0000";
+    signal B        : STD_LOGIC_VECTOR(3 downto 0) := "0000";
+    signal Sel      : STD_LOGIC_VECTOR(2 downto 0) := "000";
+    signal Result   : STD_LOGIC_VECTOR(3 downto 0);
+    signal CarryOut : STD_LOGIC;
+
+begin
+
+    uut: alu_4bit
+        port map (
+            A        => A,
+            B        => B,
+            Sel      => Sel,
+            Result   => Result,
+            CarryOut => CarryOut
+        );
+
+    stim_proc: process
+    begin
+
+        -- Input values
+        A <= "1010";
+        B <= "0011";
+
+        -- Test 1: Addition
+        Sel <= "000";
+        wait for 20 ns;
+
+        -- Test 2: Subtraction
+        Sel <= "001";
+        wait for 20 ns;
+
+        -- Test 3: Increment A
+        Sel <= "010";
+        wait for 20 ns;
+
+        -- Test 4: Decrement A
+        Sel <= "011";
+        wait for 20 ns;
+
+        -- Test 5: AND
+        Sel <= "100";
+        wait for 20 ns;
+
+        -- Test 6: OR
+        Sel <= "101";
+        wait for 20 ns;
+
+        -- Test 7: XOR
+        Sel <= "110";
+        wait for 20 ns;
+
+        -- Test 8: NOT A
+        Sel <= "111";
+        wait for 20 ns;
+
+        -- Change inputs
+        A <= "0101";
+        B <= "0101";
+
+        -- Test 9: XOR
+        Sel <= "110";
+        wait for 20 ns;
+
+        -- Test 10: Addition
+        Sel <= "000";
+        wait for 20 ns;
+
+        -- Stop simulation
+        wait;
+
+    end process;
+
+end Behavioral;
